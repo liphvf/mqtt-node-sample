@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <!-- UIkit CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.4/css/uikit.min.css" />
+
+  <!-- UIkit JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.4/js/uikit.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.4/js/uikit-icons.min.js"></script>
+  <!-- development version, includes helpful console warnings -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+</head>
+
+<body>
+
+  <div id="app" class="uk-container">
+    <!-- {{message}} -->
+
+    <div>
+      <h1>Leds</h1>
+      <div class="uk-child-width-1-2@s uk-grid-match" uk-grid>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="background-color: red; cursor: pointer;" @click="addColorRed">
+            <h3 class="uk-card-title">Vermelho</h3>
+          </div>
+        </div>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="background-color: yellow; cursor: pointer;" @click="addColorYellow">
+            <h3 class="uk-card-title">Amarelo</h3>
+          </div>
+        </div>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="background-color: green; cursor: pointer;" @click="addColorGreen">
+            <h3 class="uk-card-title">Verde</h3>
+          </div>
+        </div>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="cursor: pointer;" @click="addColorWhite">
+            <h3 class="uk-card-title">Branco</h3>
+          </div>
+        </div>
+      </div>
+
+
+      <hr class="uk-divider-icon">
+      <h1>Componentes</h1>
+      <div class="uk-child-width-1-2@s uk-grid-match" uk-grid>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="cursor: pointer;" @click="rele">
+            <h3 class="uk-card-title">Rele</h3>
+          </div>
+        </div>
+      </div>
+
+      <hr class="uk-divider-icon">
+      <div class="uk-child-width-1-1@s uk-grid-match" uk-grid>
+        <div>
+          <div class="uk-card uk-card-default uk-card-hover uk-card-body" style="cursor: pointer;" @click="todos">
+            <h3 class="uk-card-title">Todos</h3>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- <button class="uk-button uk-button-primary" style="margin-top: 18px;" @click="sendMqtt">Enviar</button> -->
+  </div>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        message: ''
+      },
+      methods:
+      {
+        sendMqtt: _.debounce(function (msg) {
+          that = this;
+          axios.post('/enviar', {
+            resposta: msg,
+          }).then(function (response) {
+            console.log("Menssagem Enviado Com Sucesso");
+            that.update();
+          })
+            .catch(function (error) {
+              console.log(error);
+            })
+
+        }, 500),
+        update: _.debounce(function (msg) {
+          that = this;
+          axios.get('/update')
+            .then(function (response) {
+              console.log("Resposta: ", response);
+              // that.message = response.data;
+              response.data.forEach(element => {
+                UIkit.notification(element.msg);
+              });
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+        }, 1000),
+        addColorRed: function () {
+          this.sendMqtt("rled");
+        },
+        addColorYellow: function () {
+          this.sendMqtt("yled");
+
+        },
+        addColorGreen: function () {
+          this.sendMqtt("gled");
+
+        },
+        addColorWhite: function () {
+          this.sendMqtt("wled");
+        },
+        todos: function () {
+          this.sendMqtt("todos");
+        },
+        rele: function () {
+          this.sendMqtt("rele");
+        }
+      }
+    })
+
+    setInterval(app.update, 5000);
+  </script>
+</body>
+
+</html>
